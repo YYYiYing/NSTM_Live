@@ -2,14 +2,49 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=https://www.youtube.com/live/L_-Hq2Nx5Wg?si=hK9pNlX8KLlwJrdn">
     <title>直播重定向</title>
-    <script>
-        // 確保在所有情況下都能立即重定向
-        window.location.href = "https://www.youtube.com/live/L_-Hq2Nx5Wg?si=hK9pNlX8KLlwJrdn";
-    </script>
+    <style>
+        /* 增加一個簡單的載入提示 */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            text-align: center; 
+            padding-top: 100px; 
+            font-size: 1.2em;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
+
+    <p>正在為您取得最新的直播網址...</p>
+    <p>請稍候...</p>
+
+    <script>
+        // --- 請修改這裡 ---
+        // 貼上您在「步驟三」取得的「網路應用程式網址」
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzExvSQqP7Y-1Sn13TKtM2hkDKAko0RFjljva-Q6dp1uJaHGEngejUZxqeBUvvnOY5pkw/exec";
+
+        // --- 以下為程式邏輯 (不用修改) ---
+        
+        // 使用 fetch API 存取您的 Apps Script 網址
+        fetch(GAS_WEB_APP_URL)
+            .then(response => response.text()) // 取得回傳的純文字 (也就是 A2 的網址)
+            .then(targetUrl => {
+                // 檢查回傳的是否為有效的 URL
+                if (targetUrl && (targetUrl.startsWith('http://') || targetUrl.startsWith('https://'))) {
+                    // 執行重定向
+                    window.location.href = targetUrl;
+                } else {
+                    // 如果 A1 是空的或 GAS 出錯
+                    document.body.innerHTML = '<p>讀取網址失敗。<br>請確認 Google Sheet (A1) 是否已填入正確網址。</p><p>錯誤訊息：' + targetUrl + '</p>';
+                }
+            })
+            .catch(error => {
+                // 如果網路連線或 GAS 伺服器出錯
+                console.error('Fetch error:', error);
+                document.body.innerHTML = '<p>無法連線至網址伺服器，請稍後再試。</p>';
+            });
+    </script>
 
 </body>
 </html>
