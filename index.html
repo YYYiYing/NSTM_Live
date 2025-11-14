@@ -35,8 +35,8 @@
                     // 執行重定向
                     window.location.href = targetUrl;
                 } else {
-                    // 如果 A1 是空的或 GAS 出錯
-                    document.body.innerHTML = '<p>讀取網址失敗。<br>請確認 Google Sheet (A1) 是否已填入正確網址。</p><p>錯誤訊息：' + targetUrl + '</p>';
+                    // 如果 A2 是空的或 GAS 出錯
+                    document.body.innerHTML = '<p>讀取網址失敗。</p><p>錯誤訊息：' + targetUrl + '</p>';
                 }
             })
             .catch(error => {
