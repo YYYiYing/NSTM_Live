@@ -3,48 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <title>直播重定向</title>
+    <link rel="preconnect" href="https://script.google.com">
     <style>
-        /* 增加一個簡單的載入提示 */
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            text-align: center; 
-            padding-top: 100px; 
-            font-size: 1.2em;
-            color: #333;
-        }
+        body { font-family: sans-serif; text-align: center; padding-top: 100px; color: #333; }
     </style>
 </head>
 <body>
-
-    <p>正在為您取得最新的直播網址...</p>
+    <p>正在為您取得最新的網址...</p>
     <p>請稍候...</p>
 
     <script>
-        // --- 請修改這裡 ---
-        // 貼上您在「步驟三」取得的「網路應用程式網址」
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzExvSQqP7Y-1Sn13TKtM2hkDKAko0RFjljva-Q6dp1uJaHGEngejUZxqeBUvvnOY5pkw/exec";
+        // --- 設定區 ---
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzExvSQqP7Y-1Sn13TKtM2hkDKAko0RFjljva-Q6dp1uJaHGEngejUZxqeBUvvnOY5pkw/exec"; // 您的 GAS 網址
+        const FALLBACK_URL = "https://mobile.nstm.gov.tw/";
+        const TIMEOUT_SECONDS = 5; // 最多等 5 秒
 
-        // --- 以下為程式邏輯 (不用修改) ---
-        
-        // 使用 fetch API 存取您的 Apps Script 網址
-        fetch(GAS_WEB_APP_URL)
-            .then(response => response.text()) // 取得回傳的純文字 (也就是 A2 的網址)
+        // --- 邏輯區 ---
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+            console.log('GAS timeout.');
+            controller.abort(); // 中止 fetch
+        }, TIMEOUT_SECONDS * 1000);
+
+        function redirectTo(url) {
+            window.location.href = url;
+        }
+
+        fetch(GAS_WEB_APP_URL, { signal: controller.signal })
+            .then(response => response.text())
             .then(targetUrl => {
-                // 檢查回傳的是否為有效的 URL
+                clearTimeout(timeoutId); // 成功收到回應，取消計時
+
                 if (targetUrl && (targetUrl.startsWith('http://') || targetUrl.startsWith('https://'))) {
-                    // 執行重定向
-                    window.location.href = targetUrl;
+                    // 成功：導向 A2 的網址
+                    redirectTo(targetUrl);
                 } else {
-                    // 如果 A2 是空的或 GAS 出錯
-                    document.body.innerHTML = '<p>讀取網址失敗。</p><p>錯誤訊息：' + targetUrl + '</p>';
+                    // 失敗：GAS 回傳 "INVALID_URL" 或 "GAS_ERROR"
+                    console.log('Received invalid URL from GAS, redirecting to fallback.');
+                    redirectTo(FALLBACK_URL);
                 }
             })
             .catch(error => {
-                // 如果網路連線或 GAS 伺服器出錯
-                console.error('Fetch error:', error);
-                document.body.innerHTML = '<p>無法連線至網址伺服器，請稍後再試。</p>';
+                // 失敗：網路錯誤或 5 秒逾時
+                clearTimeout(timeoutId);
+                console.error('Fetch error:', error.name);
+                redirectTo(FALLBACK_URL);
             });
     </script>
-
 </body>
 </html>
